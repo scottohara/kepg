@@ -6,6 +6,7 @@
 #include "kepgview.h"
 #include "settings.h"
 #include "datalist.h"
+#include "channellist.h"
 
 #include <klocale.h>
 #include <QtGui/QLabel>
@@ -17,11 +18,16 @@ kepgView::kepgView(QWidget *)
     setAutoFillBackground(true);
     dl = new DataList::DataList();
     connect(dl, SIGNAL(fetched()), this, SLOT(gotDataList()));
+
+    cl = new ChannelList::ChannelList();
+    connect(cl, SIGNAL(fetched()), this, SLOT(gotChannelList()));
+    
 }
 
 kepgView::~kepgView()
 {
     delete dl;
+    delete cl;
 }
 
 void kepgView::switchColors()
@@ -55,7 +61,24 @@ void kepgView::getDataList()
 
 void kepgView::gotDataList()
 {
-    ui_kepgview_base.plainTextEdit->setPlainText(dl->read());
+    QList<StationDay*> stationDays;
+    dl->getStationDays(&stationDays);
+    
+    QList<StationDay*>::iterator sd;
+    for (sd = stationDays.begin(); sd != stationDays.end(); ++sd) {
+      ui_kepgview_base.plainTextEdit->appendPlainText("Fetching " + (*sd)->configGroup() + " " + (*sd)->configPrefix());
+    }
+}
+
+void kepgView::getChannelList()
+{
+  
+    cl->fetch();
+}
+
+void kepgView::gotChannelList()
+{
+    ui_kepgview_base.plainTextEdit->setPlainText(cl->read());
 }
 
 #include "kepgview.moc"

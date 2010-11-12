@@ -1,4 +1,4 @@
-set(kepg_SRCS xmltvbase.cpp
+set(kepg_SRCS stationday.cpp xmltvbase.cpp
    kepg.cpp
    main.cpp
    kepgview.cpp

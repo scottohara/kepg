@@ -29,6 +29,7 @@
 #define DATALIST_H
 
 #include <xmltvbase.h>
+#include "stationday.h"
 
 class DataList : public XmlTvBase
 {
@@ -43,6 +44,8 @@ class DataList : public XmlTvBase
      * Default Destructor
      */
     virtual ~DataList();
+    
+    void getStationDays(QList<StationDay*> *stationDays);
 };
 
 #endif // DATALIST_H

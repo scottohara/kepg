@@ -25,55 +25,29 @@
 
 */
 
-#ifndef XMLTVBASE_H
-#define XMLTVBASE_H
+#ifndef STATIONDAY_H
+#define STATIONDAY_H
 
-#include <QObject>
-#include <kio/job.h>
-#include <kconfiggroup.h>
-#include <QDomElement>
+#include <xmltvbase.h>
 
-class XmlTvBase : public QObject
+
+class StationDay : public XmlTvBase
 {
-  Q_OBJECT
+
+public:
+Q_OBJECT
   public:
     /**
      * Default Constructor
      */
-    XmlTvBase();
+    StationDay(QString channelId, QString day);
 
     /**
      * Default Destructor
      */
-    virtual ~XmlTvBase();
+    virtual ~StationDay();
     
-    virtual void fetch();
-    QString configGroup() const;
-    QString configPrefix() const;    
-    
-    
-  Q_SIGNALS:
-    void fetched();
-    
-  private:
-    KIO::FileJob *m_destFile;
-    QByteArray m_data;
-    QString m_lastModified;
-    KConfigGroup *m_configGroup;
-
-  protected:
-    QString CONFIG_PREFIX;
-    QString URL;
-    QString FILE_PATH;
-
-    void read(QDomDocument *doc);
-    void configGroup(QString groupName);
-
-  protected Q_SLOTS:
-    virtual void slotFileOpen(KIO::Job *job);
-    virtual void slotFileWritten(KIO::Job *job, KIO::filesize_t written);
-    virtual void slotFetch(KJob *job);
- 
+    virtual QString read();
 };
 
-#endif // XMLTVBASE_H
+#endif // STATIONDAY_H

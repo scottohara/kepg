@@ -25,24 +25,24 @@
 
 */
 
-#ifndef DATALIST_H
-#define DATALIST_H
+#ifndef CHANNELLIST_H
+#define CHANNELLIST_H
 
 #include <xmltvbase.h>
 
-class DataList : public XmlTvBase
+class ChannelList : public XmlTvBase
 {
   Q_OBJECT
   public:
     /**
      * Default Constructor
      */
-    DataList();
+    ChannelList();
 
     /**
      * Default Destructor
      */
-    virtual ~DataList();
+    virtual ~ChannelList();
 };
 
-#endif // DATALIST_H
+#endif // CHANNELLIST_H

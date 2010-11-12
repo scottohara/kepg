@@ -25,55 +25,47 @@
 
 */
 
-#ifndef XMLTVBASE_H
-#define XMLTVBASE_H
+#include "stationday.h"
+#include <KDebug>
 
-#include <QObject>
-#include <kio/job.h>
-#include <kconfiggroup.h>
-#include <QDomElement>
+StationDay::StationDay(QString channelId, QString day)
+{    
+    kDebug();
 
-class XmlTvBase : public QObject
+    configGroup(channelId);
+    CONFIG_PREFIX = day;
+    URL = "http://xml.oztivo.net/xmltv/" + channelId + "_" + day + ".xml.gz";
+    FILE_PATH = QString(getenv("HOME")) + "/.kepg/" + channelId + "_" + day + ".xml.gz";
+}
+
+StationDay::~StationDay()
 {
-  Q_OBJECT
-  public:
-    /**
-     * Default Constructor
-     */
-    XmlTvBase();
+    kDebug();
+}
 
-    /**
-     * Default Destructor
-     */
-    virtual ~XmlTvBase();
+QString StationDay::read()
+{
+    kDebug();
+
+    // Base method takes care of unzipping the XML and loading into a DOM
+    QDomDocument document;
+    XmlTvBase::read(&document);
     
-    virtual void fetch();
-    QString configGroup() const;
-    QString configPrefix() const;    
+    QDomNodeList channelList = document.documentElement().elementsByTagName("channel");
     
+    QList<QMap<QString,QString> > channels;
     
-  Q_SIGNALS:
-    void fetched();
+    for (int i = 0; i < channelList.count(); i++) {
+      QMap<QString,QString> channel;
+      QDomElement channelEl = channelList.at(i).toElement();
+      channel["id"] = channelEl.attribute("id");
+      channel["name"] = channelEl.attribute("name");
+      channels.append(channel);
+    }
     
-  private:
-    KIO::FileJob *m_destFile;
-    QByteArray m_data;
-    QString m_lastModified;
-    KConfigGroup *m_configGroup;
+    return channels.first().value("id");
+    //return data;
+    
+}
 
-  protected:
-    QString CONFIG_PREFIX;
-    QString URL;
-    QString FILE_PATH;
-
-    void read(QDomDocument *doc);
-    void configGroup(QString groupName);
-
-  protected Q_SLOTS:
-    virtual void slotFileOpen(KIO::Job *job);
-    virtual void slotFileWritten(KIO::Job *job, KIO::filesize_t written);
-    virtual void slotFetch(KJob *job);
- 
-};
-
-#endif // XMLTVBASE_H
+#include "stationday.moc"

@@ -61,7 +61,14 @@ void kepgView::getDataList()
 
 void kepgView::gotDataList()
 {
-    ui_kepgview_base.plainTextEdit->setPlainText(dl->read());
+    QList<StationDay*> stationDays;
+    dl->getStationDays(&stationDays);
+    
+    QList<StationDay*>::iterator sd;
+    for (sd = stationDays.begin(); sd != stationDays.end(); ++sd) {
+      ui_kepgview_base.plainTextEdit->appendPlainText("Fetching " + (*sd)->configGroup() + " " + (*sd)->configPrefix());
+      (*sd)->fetch();
+    }
 }
 
 void kepgView::getChannelList()

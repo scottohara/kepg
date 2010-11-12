@@ -26,22 +26,37 @@
 */
 
 #include "xmltvbase.h"
-#include <settings.h>
-#include <kio/jobclasses.h>
-#include <kio/job.h>
-#include <kio/filejob.h>
-#include <kfilterdev.h>
+#include <KIO/Job>
+#include <KIO/FileJob>
+#include <KFilterDev>
+#include <KSharedConfig>
+#include <QFile>
 #include <QDomElement>
 #include <KDebug>
 
 XmlTvBase::XmlTvBase()
 {    
-    kDebug();
+  
 }
 
 XmlTvBase::~XmlTvBase()
 {
-    kDebug();
+    delete m_configGroup;    
+}
+
+void XmlTvBase::configGroup(QString groupName)
+{
+    m_configGroup = new KConfigGroup(KGlobal::config(), groupName);    
+}
+
+QString XmlTvBase::configGroup() const
+{
+    return m_configGroup->name();
+}
+
+QString XmlTvBase::configPrefix() const
+{
+    return CONFIG_PREFIX;
 }
 
 void XmlTvBase::fetch()
@@ -57,8 +72,8 @@ void XmlTvBase::fetch()
     }
     
     // Add headers to make it a conditional GET
-    stJob->addMetaData("customHTTPHeader", "If-Modified-Since: " + Settings::lastModified());
-    //job->addMetaData("customHTTPHeader", "If-None-Match: " + Settings::eTag());		// Don't know whether this is actually returned?
+    stJob->addMetaData("customHTTPHeader", "If-Modified-Since: " + m_configGroup->readEntry(CONFIG_PREFIX + "LastModified", QString()));
+    //job->addMetaData("customHTTPHeader", "If-None-Match: " + m_configGroup->readEntry(CONFIG_PREFIX + "ETag", QString()));		// Don't know whether this is actually returned?
     stJob->addMetaData("UserAgent", "User-Agent: kepg/1.0");
     
     // Start the download
@@ -80,9 +95,17 @@ void XmlTvBase::slotFetch(KJob *job)
     // If we got a 200 OK response...
     if (stJob->queryMetaData("responsecode") == "200") {
       kDebug() << "Got new version (" + stJob->queryMetaData("responsecode") + ")";
-      
-      //TODO: Create empty file if not exists
-      
+
+      m_data = stJob->data();
+      m_lastModified = stJob->queryMetaData("modified");
+
+      // If the destination file doesn't exist, create it now
+      QFile destFile(FILE_PATH);
+      if (!destFile.exists()) {
+	destFile.open(QIODevice::WriteOnly);
+	destFile.close();
+      }
+            
       // Setup the destination file for writing
       KUrl url("file://" + FILE_PATH);
       KIO::FileJob *fJob = KIO::open(url, QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text);
@@ -90,14 +113,11 @@ void XmlTvBase::slotFetch(KJob *job)
 	  kDebug() << "Cannot create file handle!";
 	  return;
       }
-      
+
       // Open the destination file
       connect(fJob, SIGNAL(open(KIO::Job*)), this, SLOT(slotFileOpen(KIO::Job*)));
       connect(fJob, SIGNAL(written(KIO::Job*, KIO::filesize_t)), this, SLOT(slotFileWritten(KIO::Job*, KIO::filesize_t)));
       fJob->start();
-      
-      m_data = stJob->data();
-      m_lastModified = stJob->queryMetaData("modified");
     } else {
       kDebug() << "Using cached version (" + stJob->queryMetaData("responsecode") + ")";
       
@@ -128,44 +148,28 @@ void XmlTvBase::slotFileWritten(KIO::Job *job, KIO::filesize_t written)
     m_destFile->close();
     
     // Save the lastModified & ETag values
-    Settings::setLastModified(m_lastModified);
-    //Settings::setETag(stj->queryMetaData("expire-date"));		// Don't know whether this is actually returned?
-    Settings::self()->writeConfig();
+    m_configGroup->writeEntry(CONFIG_PREFIX + "LastModified", m_lastModified);
+    //configGroup->writeEntry(CONFIG_PREFIX + "ETag", stj->queryMetaData("expire-date"));		// Don't know whether this is actually returned?
+    m_configGroup->sync();
     
     // Signal that we've finished
     emit fetched();
 }
 
-QString XmlTvBase::read()
+void XmlTvBase::read(QDomDocument *doc)
 {
     kDebug();
     
     // Decompress the file
     KFilterDev *compressedDev = static_cast<KFilterDev *>(KFilterDev::deviceForFile(FILE_PATH, "application/x-gzip"));
     compressedDev->open(QIODevice::ReadOnly);
-    //QByteArray data = compressedDev->readAll();
 
     // Load the XML into a DOM and get the list of channel elements
-    QDomDocument document;
-    document.setContent(compressedDev);
-    QDomNodeList channelList = document.documentElement().elementsByTagName("channel");
+    doc->setContent(compressedDev);
     
     // Close the file now
     compressedDev->close();
     delete compressedDev;
-    
-    QList<QMap<QString,QString> > channels;
-    
-    for (int i = 0; i < channelList.count(); i++) {
-      QMap<QString,QString> channel;
-      QDomElement channelEl = channelList.at(i).toElement();
-      channel["id"] = channelEl.attribute("id");
-      channel["name"] = channelEl.attribute("name");
-      channels.append(channel);
-    }
-    
-    return channels.first().value("id");
-    //return data;
 }
 
 #include "xmltvbase.moc"

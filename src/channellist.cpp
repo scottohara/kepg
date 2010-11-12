@@ -32,6 +32,7 @@ ChannelList::ChannelList()
 {    
     kDebug();
 
+    configGroup("ChannelList");
     URL = "http://xml.oztivo.net/xmltv/channels.xml.gz";
     FILE_PATH = QString(getenv("HOME")) + "/.kepg/channels.xml.gz"; 
 }
@@ -39,6 +40,31 @@ ChannelList::ChannelList()
 ChannelList::~ChannelList()
 {
     kDebug();
+}
+
+QString ChannelList::read()
+{
+    kDebug();
+
+    // Base method takes care of unzipping the XML and loading into a DOM
+    QDomDocument document;
+    XmlTvBase::read(&document);
+    
+    QDomNodeList channelList = document.documentElement().elementsByTagName("channel");
+    
+    QList<QMap<QString,QString> > channels;
+    
+    for (int i = 0; i < channelList.count(); i++) {
+      QMap<QString,QString> channel;
+      QDomElement channelEl = channelList.at(i).toElement();
+      channel["id"] = channelEl.attribute("id");
+      channel["name"] = channelEl.attribute("name");
+      channels.append(channel);
+    }
+    
+    return channels.first().value("id");
+    //return data;
+    
 }
 
 #include "channellist.moc"

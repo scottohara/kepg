@@ -30,6 +30,8 @@
 
 #include <QObject>
 #include <kio/job.h>
+#include <kconfiggroup.h>
+#include <QDomElement>
 
 class XmlTvBase : public QObject
 {
@@ -45,8 +47,8 @@ class XmlTvBase : public QObject
      */
     virtual ~XmlTvBase();
     
-    void fetch();
-    QString read();
+    virtual void fetch();
+    QString fileName() const;
     
     
   Q_SIGNALS:
@@ -56,11 +58,16 @@ class XmlTvBase : public QObject
     KIO::FileJob *m_destFile;
     QByteArray m_data;
     QString m_lastModified;
+    KConfigGroup *m_configGroup;
 
   protected:
-    const QString URL;
-    const QString FILE_PATH;
-    
+    QString CONFIG_PREFIX;
+    QString URL;
+    QString FILE_PATH;
+
+    void read(QDomDocument *doc);
+    void configGroup(QString groupName);
+
   protected Q_SLOTS:
     virtual void slotFileOpen(KIO::Job *job);
     virtual void slotFileWritten(KIO::Job *job, KIO::filesize_t written);

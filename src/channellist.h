@@ -43,6 +43,8 @@ class ChannelList : public XmlTvBase
      * Default Destructor
      */
     virtual ~ChannelList();
+    
+    QString read();
 };
 
 #endif // CHANNELLIST_H

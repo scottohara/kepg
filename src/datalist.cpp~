@@ -26,19 +26,96 @@
 */
 
 #include "datalist.h"
+#include "stationday.h"
+#include <KDateTime>
+#include <KSharedConfig>
 #include <KDebug>
-
-const QString XmlTvBase::URL = "http://xml.oztivo.net/xmltv/datalist.xml.gz";
-const QString XmlTvBase::FILE_PATH = QString(getenv("HOME")) + "/.kepg/datalist.xml.gz";
+#include <QDir>
+#include <KIO/DeleteJob>
 
 DataList::DataList()
 {    
     kDebug();
+    configGroup("DataList");
+    URL = "http://xml.oztivo.net/xmltv/datalist.xml.gz";
+    FILE_PATH = QString(getenv("HOME")) + "/.kepg/datalist.xml.gz";
 }
 
 DataList::~DataList()
 {
     kDebug();
+}
+
+void DataList::getStationDays(QList<StationDay*> *stationDays)
+{
+    kDebug();
+
+    // Base method takes care of unzipping the XML and loading into a DOM
+    QDomDocument document;
+    XmlTvBase::read(&document);
+    
+    // Iterate over the list of channel nodes
+    QDomNodeList channelList = document.documentElement().elementsByTagName("channel");
+    
+    for (int i = 0; i < channelList.count(); i++) {
+      QDomElement channelEl = channelList.at(i).toElement();
+
+      //TODO: replace this hack with the actual channels list we want
+      
+      if (channelEl.attribute("id") == "7TWO-NSW") {
+	
+	// For this channel, get the list of existing data files
+	QDir dataDir(QString(getenv("HOME")) + "/.kepg");
+	QStringList dataFiles = dataDir.entryList(QStringList(channelEl.attribute("id") + "_*.xml.gz"), QDir::Files, QDir::Name);
+
+	// Determine the name of today's file
+	QString todaysFile(channelEl.attribute("id") + "_" + KDateTime::currentLocalDate().toString(Qt::ISODate) + ".xml.gz");
+	KUrl::List deleteList;
+
+	// Iterate over the list and identify any that earlier than today's file
+	QStringListIterator df(dataFiles);
+	while (df.hasNext()) {
+	  QString dataFile(df.next());
+
+	  if (dataFile < todaysFile) {
+	    deleteList.append("file://" + QString(getenv("HOME")) + "/.kepg/" + dataFile);
+	  } else {
+	    break;
+	  }
+	}
+	
+	// Now that we have our list of files to delete, fire off a DeleteJob
+	KIO::DeleteJob *delJob = KIO::del(deleteList);
+	delJob->start();
+	
+	// Remove the corresponding *_LastModified config settings
+	KConfigGroup *tempConfigGroup = new KConfigGroup(KGlobal::config(), channelEl.attribute("id"));
+	QListIterator<KUrl> dl(deleteList);
+	while (dl.hasNext()) {
+	  KUrl deletePath(dl.next());
+	  QRegExp deleteKey("\\d{4}-\\d{2}-\\d{2}");
+	  deleteKey.indexIn(deletePath.path());
+	  tempConfigGroup->deleteEntry(deleteKey.cap(0) + "LastModified");
+	  //tempConfigGroup->deleteEntry(deleteKey.cap(0) + "ETag");
+	}
+	tempConfigGroup->sync();
+	delete tempConfigGroup;
+	
+	// Iterate of the list of datafor nodes
+	QDomNodeList dataForList = channelEl.elementsByTagName("datafor");
+	
+	for (int j = 0; j < dataForList.count(); j++) {
+	  QDomElement dataForEl = dataForList.at(j).toElement();
+	  
+	  QDate datafor = KDateTime::fromString(dataForEl.text(), KDateTime::ISODate).date();
+	  
+	  if (datafor >= KDateTime::currentLocalDate()) {
+	    // Add a StationDay object to the list
+	    stationDays->append(new StationDay(channelEl.attribute("id"), dataForEl.text()));
+	  }
+	}
+      }
+    }
 }
 
 #include "datalist.moc"
