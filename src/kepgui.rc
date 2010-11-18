@@ -1,10 +1,13 @@
 <!DOCTYPE kpartgui SYSTEM "kpartgui.dtd">
 <kpartgui name="kepg" version="1">
 <MenuBar>
-  <Menu name="move"><text>&amp;Move</text>
-    <Action name="switch_action" />
+  <Menu name="file">
     <Action name="get_data_list" />
     <Action name="get_channel_list" />
   </Menu>
 </MenuBar>
+<ToolBar fullWidth="true" name="mainToolBar">
+  <Action name="get_data_list"/>
+  <Action name="file_quit"/>
+</ToolBar>
 </kpartgui>

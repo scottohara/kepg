@@ -116,13 +116,13 @@ void XmlTvBase::slotFetch(KJob *job)
 
       // Open the destination file
       connect(fJob, SIGNAL(open(KIO::Job*)), this, SLOT(slotFileOpen(KIO::Job*)));
-      connect(fJob, SIGNAL(written(KIO::Job*, KIO::filesize_t)), this, SLOT(slotFileWritten(KIO::Job*, KIO::filesize_t)));
+      connect(fJob, SIGNAL(written(KIO::Job*, KIO::filesize_t)), this, SLOT(slotFileWritten()));
       fJob->start();
     } else {
       kDebug() << "Using cached version (" + stJob->queryMetaData("responsecode") + ")";
       
       // Signal that we've finished
-      emit fetched();
+      emit fetched(this);
     }
 }
 
@@ -140,7 +140,7 @@ void XmlTvBase::slotFileOpen(KIO::Job *job)
     m_destFile->write(m_data);
 }
 
-void XmlTvBase::slotFileWritten(KIO::Job *job, KIO::filesize_t written)
+void XmlTvBase::slotFileWritten()
 {
     kDebug();
     
@@ -153,7 +153,7 @@ void XmlTvBase::slotFileWritten(KIO::Job *job, KIO::filesize_t written)
     m_configGroup->sync();
     
     // Signal that we've finished
-    emit fetched();
+    emit fetched(this);
 }
 
 void XmlTvBase::read(QDomDocument *doc)

@@ -1,9 +1,0 @@
-<!DOCTYPE kpartgui SYSTEM "kpartgui.dtd">
-<kpartgui name="kepg" version="1">
-<MenuBar>
-  <Menu name="move"><text>&amp;Move</text>
-    <Action name="switch_action" />
-    <Action name="get_data_list" />
-  </Menu>
-</MenuBar>
-</kpartgui>

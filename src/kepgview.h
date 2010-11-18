@@ -64,6 +64,7 @@ private slots:
     void gotDataList();
     void getChannelList();
     void gotChannelList();
+    void gotStationDay(XmlTvBase *xmltb);
 };
 
 #endif // kepgVIEW_H

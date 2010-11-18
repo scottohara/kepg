@@ -2,5 +2,5 @@
 File=kepg.kcfg
 ClassName=Settings
 Singleton=true
-Mutators=col_background,col_foreground,LastModified,ETag
+Mutators=col_background,col_foreground,Channels
 # will create the necessary code for setting those variables

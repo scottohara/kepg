@@ -42,7 +42,7 @@ ChannelList::~ChannelList()
     kDebug();
 }
 
-QString ChannelList::read()
+void ChannelList::getChannelsList(QList<QStringList> *channelsList)
 {
     kDebug();
 
@@ -50,21 +50,15 @@ QString ChannelList::read()
     QDomDocument document;
     XmlTvBase::read(&document);
     
+    // Iterate over the list of channel nodes
     QDomNodeList channelList = document.documentElement().elementsByTagName("channel");
     
-    QList<QMap<QString,QString> > channels;
-    
     for (int i = 0; i < channelList.count(); i++) {
-      QMap<QString,QString> channel;
       QDomElement channelEl = channelList.at(i).toElement();
-      channel["id"] = channelEl.attribute("id");
-      channel["name"] = channelEl.attribute("name");
-      channels.append(channel);
+      QStringList channel;
+      channel << channelEl.attribute("id") << channelEl.elementsByTagName("display-name").at(0).toElement().text();
+      channelsList->append(channel);
     }
-    
-    return channels.first().value("id");
-    //return data;
-    
 }
 
 #include "channellist.moc"

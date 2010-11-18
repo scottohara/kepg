@@ -32,6 +32,7 @@
 #include <KDebug>
 #include <QDir>
 #include <KIO/DeleteJob>
+#include "settings.h"
 
 DataList::DataList()
 {    
@@ -60,9 +61,7 @@ void DataList::getStationDays(QList<StationDay*> *stationDays)
     for (int i = 0; i < channelList.count(); i++) {
       QDomElement channelEl = channelList.at(i).toElement();
 
-      //TODO: replace this hack with the actual channels list we want
-      
-      if (channelEl.attribute("id") == "7TWO-NSW") {
+      if (Settings::channels().contains(channelEl.attribute("id"))) {
 	
 	// For this channel, get the list of existing data files
 	QDir dataDir(QString(getenv("HOME")) + "/.kepg");

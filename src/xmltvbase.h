@@ -53,7 +53,7 @@ class XmlTvBase : public QObject
     
     
   Q_SIGNALS:
-    void fetched();
+    void fetched(XmlTvBase *xmltb);
     
   private:
     KIO::FileJob *m_destFile;
@@ -71,7 +71,7 @@ class XmlTvBase : public QObject
 
   protected Q_SLOTS:
     virtual void slotFileOpen(KIO::Job *job);
-    virtual void slotFileWritten(KIO::Job *job, KIO::filesize_t written);
+    virtual void slotFileWritten();
     virtual void slotFetch(KJob *job);
  
 };

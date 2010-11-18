@@ -6,6 +6,7 @@
 #include "kepg.h"
 #include "kepgview.h"
 #include "settings.h"
+#include "channelswidget.h"
 
 #include <QtGui/QDropEvent>
 #include <QtGui/QPainter>
@@ -51,16 +52,10 @@ kepg::~kepg()
 
 void kepg::setupActions()
 {
-    KStandardAction::openNew(this, SLOT(fileNew()), actionCollection());
     KStandardAction::quit(qApp, SLOT(closeAllWindows()), actionCollection());
-
     KStandardAction::preferences(this, SLOT(optionsPreferences()), actionCollection());
 
     // custom menu and menu item - the slot is in the class kepgView
-    KAction *custom = new KAction(KIcon("colorize"), i18n("Swi&tch Colors"), this);
-    actionCollection()->addAction( QLatin1String("switch_action"), custom );
-    connect(custom, SIGNAL(triggered(bool)), m_view, SLOT(switchColors()));
-    
     KAction *dl = new KAction(KIcon("colorize"), i18n("&Get Data List"), this);
     actionCollection()->addAction( QLatin1String("get_data_list"), dl );
     connect(dl, SIGNAL(triggered(bool)), m_view, SLOT(getDataList()));    
@@ -94,6 +89,9 @@ void kepg::optionsPreferences()
     QWidget *generalSettingsDlg = new QWidget;
     ui_prefs_base.setupUi(generalSettingsDlg);
     dialog->addPage(generalSettingsDlg, i18n("General"), "package_setting");
+    QWidget *channelSettingsDlg = new QWidget;
+    ui_channel_prefs.setupUi(channelSettingsDlg);
+    dialog->addPage(channelSettingsDlg, i18n("Channels"), "package_setting");
     connect(dialog, SIGNAL(settingsChanged(QString)), m_view, SLOT(settingsChanged()));
     dialog->setAttribute( Qt::WA_DeleteOnClose );
     dialog->show();

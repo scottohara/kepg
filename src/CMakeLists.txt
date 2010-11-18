@@ -1,12 +1,14 @@
-set(kepg_SRCS stationday.cpp xmltvbase.cpp
+set(kepg_SRCS channelswidget.cpp
    kepg.cpp
    main.cpp
    kepgview.cpp
+   xmltvbase.cpp
    datalist.cpp 
    channellist.cpp
+   stationday.cpp
  )
 
-kde4_add_ui_files(kepg_SRCS kepgview_base.ui prefs_base.ui)
+kde4_add_ui_files(kepg_SRCS kepgview_base.ui prefs_base.ui channel_prefs.ui)
 
 kde4_add_kcfg_files(kepg_SRCS settings.kcfgc )
 

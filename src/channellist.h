@@ -44,7 +44,7 @@ class ChannelList : public XmlTvBase
      */
     virtual ~ChannelList();
     
-    QString read();
+    void getChannelsList(QList<QStringList> *channelsList);
 };
 
 #endif // CHANNELLIST_H

@@ -18,12 +18,9 @@
 	    <default>2</default>
     </entry>
   </group>
-  <group name="DataList">
-    <entry name="LastModified" type="String">
-      <label>Last modified header of datalist.xml.gz</label>
-    </entry>
-    <entry name="ETag" type="String">
-      <label>ETag header of datalist.xml.gz</label>
+  <group name="Channels">
+    <entry name="Channels" type="StringList">
+      <label>Favourite Channels</label>
     </entry>
   </group>
 </kcfg>

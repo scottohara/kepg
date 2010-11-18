@@ -10,6 +10,7 @@
 #include <kxmlguiwindow.h>
 
 #include "ui_prefs_base.h"
+#include "channelswidget.h"
 
 class kepgView;
 class QPrinter;
@@ -47,6 +48,7 @@ private:
 
 private:
     Ui::prefs_base ui_prefs_base ;
+    ChannelsWidget ui_channel_prefs;
     kepgView *m_view;
 
     QPrinter   *m_printer;

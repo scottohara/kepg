@@ -17,10 +17,10 @@ kepgView::kepgView(QWidget *)
     settingsChanged();
     setAutoFillBackground(true);
     dl = new DataList::DataList();
-    connect(dl, SIGNAL(fetched()), this, SLOT(gotDataList()));
+    connect(dl, SIGNAL(fetched(XmlTvBase *)), this, SLOT(gotDataList()));
 
     cl = new ChannelList::ChannelList();
-    connect(cl, SIGNAL(fetched()), this, SLOT(gotChannelList()));
+    connect(cl, SIGNAL(fetched(XmlTvBase *)), this, SLOT(gotChannelList()));
     
 }
 
@@ -55,7 +55,6 @@ void kepgView::settingsChanged()
 
 void kepgView::getDataList()
 {
-  
     dl->fetch();
 }
 
@@ -66,20 +65,31 @@ void kepgView::gotDataList()
     
     QList<StationDay*>::iterator sd;
     for (sd = stationDays.begin(); sd != stationDays.end(); ++sd) {
-      ui_kepgview_base.plainTextEdit->appendPlainText("Fetching " + (*sd)->configGroup() + " " + (*sd)->configPrefix());
+      connect((*sd), SIGNAL(fetched(XmlTvBase *)), this, SLOT(gotStationDay(XmlTvBase *)));
       (*sd)->fetch();
     }
 }
 
 void kepgView::getChannelList()
 {
-  
     cl->fetch();
 }
 
 void kepgView::gotChannelList()
 {
-    ui_kepgview_base.plainTextEdit->setPlainText(cl->read());
+    QList<QStringList> channelsList;
+    cl->getChannelsList(&channelsList);
+    
+    QList<QStringList>::iterator chan;
+    for (chan = channelsList.begin(); chan != channelsList.end(); ++chan) {
+      ui_kepgview_base.plainTextEdit->appendPlainText((*chan).join(" - "));
+    }
 }
+
+void kepgView::gotStationDay(XmlTvBase *xmltb)
+{
+    ui_kepgview_base.plainTextEdit->appendPlainText("Fetched " + xmltb->configGroup() + " " + xmltb->configPrefix());
+}
+
 
 #include "kepgview.moc"
