@@ -1,4 +1,4 @@
-My first foray into KDE/Qt/C++ development.
+My first foray into KDE/Qt/C++ development
 
 How To Build This Template
 -=-=-=-=-=-=-=-=-=-=-=-=-=
